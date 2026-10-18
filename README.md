@@ -36,3 +36,9 @@ the stored residue maps exactly.
 pdflatex tools.tex
 pdflatex tools.tex
 ```
+
+## License
+
+Everything in this repository, the paper and the scripts, is licensed under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), the same license
+as the paper on Hexagon; see [`LICENSE`](LICENSE).
