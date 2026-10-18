@@ -16,7 +16,8 @@ Claims checked here
   and, after it, that K_6 v complement(K_4) is not graceful although it
   passes the iterated parity test and the residue equations for q <= 16.
 * Corollary 3.10: each step of the proof; the conclusion on small cases;
-  that Golomb's condition does not exclude these graphs; and an exhaustive
+  that level 1 of Proposition 3.5 also excludes them (as it does the graphs
+  of Corollary 3.9) while Golomb's condition does not; and an exhaustive
   search showing that K_{1,1,1,1,2,2} is not graceful.
 * Section 3.5: the windmill cut counts, and the archived residue maps showing
   that the residue equations, together with the capacities, are solvable for
@@ -33,7 +34,7 @@ say which period.
 """
 from collections import Counter
 from functools import lru_cache
-from itertools import combinations, product
+from itertools import combinations, combinations_with_replacement, product
 from math import comb, isqrt
 from pathlib import Path
 import json
@@ -399,6 +400,11 @@ def check_corollary_3_9_gaussian():
           == 4 * (p * p + 2 * p * q - (2 * k + 1)),
           "opposite parities give p^2 + 2pq = 2k + 1 again")
 
+    # The remark after the proof: levels 0 and 1 of Proposition 3.5 exclude
+    # the same graphs (finite check), and not K_6 v complement(K_4).
+    for s_, N_ in [(6, 2), (6, 6), (14, 4), (22, 2)]:
+        check(level_one_excludes([1] * s_ + [N_]), f"level 1 excludes K_{s_} v complement(K_{N_})")
+    check(not level_one_excludes([1] * 6 + [4]), "level 1 does not exclude K_6 v complement(K_4)")
     # Finite sanity check of the conclusion: enumerate the residues mod 4 of
     # the clique and independent labels (counts c_r, x_r) and test the
     # identity at z = -1 and z = i directly.
@@ -535,6 +541,34 @@ def check_K6_join_4():
 # Section 3.4: Corollary 3.10, K_{1,1,1,1,a,b} with a = b = 2 (mod 4)
 # ----------------------------------------------------------------------------
 
+def level_one_excludes(parts):
+    """Do levels 0 and 1 of Proposition 3.5 exclude K_{parts}?  For every
+    choice of the number of odd labels in each part that gives the level-0
+    cut ceil(m/2), the graph G_1 of same-parity edges must have all degrees
+    even with m_1 = floor(m/2) = 1 or 2 (mod 4) (the last sentence of the
+    proposition).  A vertex of part i with parity p is adjacent in G_1 to the
+    vertices of parity p in the other parts."""
+    n = sum(parts)
+    m = (n * n - sum(a * a for a in parts)) // 2
+    # Parts of equal size are interchangeable, so for each size we choose a
+    # multiset of odd-label counts rather than a sequence.
+    sizes = sorted(set(parts))
+    groups = [list(combinations_with_replacement(range(a + 1), parts.count(a))) for a in sizes]
+    for choice in product(*groups):
+        odd = [o for group in choice for o in group]
+        parts_in_order = [a for a in sizes for _ in range(parts.count(a))]
+        even = [a - o for a, o in zip(parts_in_order, odd)]
+        total_odd, total_even = sum(odd), sum(even)
+        cut = sum(o * (total_even - e) for o, e in zip(odd, even))
+        if cut != (m + 1) // 2:
+            continue
+        degrees = ([total_odd - o for o in odd if o > 0]
+                   + [total_even - e for e in even if e > 0])
+        if not (all(d % 2 == 0 for d in degrees) and bosak_excludes(m // 2)):
+            return False
+    return True
+
+
 def check_corollary_3_10():
     """Corollary 3.10: K_{1,1,1,1,a,b} is not graceful when a = b = 2 (mod 4).
     We check each step of the proof, then the conclusion on small cases."""
@@ -564,6 +598,10 @@ def check_corollary_3_10():
     for a, b in [(2, 2), (2, 6), (6, 6), (2, 10)]:
         check(not multipartite_identity_solvable_at_minus_one_and_i(a, b),
               f"K_(1,1,1,1,{a},{b}) at z = -1 and z = i")
+    # The remark after the corollary: levels 0 and 1 of Proposition 3.5
+    # exclude the same graphs (finite check).
+    for a, b in [(2, 2), (2, 6), (6, 6), (2, 10), (6, 10)]:
+        check(level_one_excludes([1, 1, 1, 1, a, b]), f"level 1 excludes K_(1,1,1,1,{a},{b})")
     # Golomb's condition does not exclude these graphs: a parity split with
     # the required ceil(m/2) cut edges exists.
     for a, b in [(2, 2), (2, 6), (6, 6), (6, 10)]:

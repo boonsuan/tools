@@ -630,11 +630,11 @@ $\{0,1,3,8,12,18\}$ modulo $31$ have every nonzero difference exactly once, so
 they satisfy the full residue counts at $q=2m+1$, although $K_6$ is not
 graceful: the label $18$ lies outside $[0,15]$. (This is a cyclic, not a
 perfect, difference set; compare Remark~\ref{rem:windmills}.) Distinct
-residues modulo $2m+1$ with these counts form a $\rho$-labeling
+residues with the full counts at $q=2m+1$ form a $\rho$-labeling
 (Section~\ref{sec:dictionary}), which Knuth calls a \emph{rainbow graceful}
-labeling~\cite[\S7.2.2.3]{knuth-pre}. By Singer's difference sets, $K_{n+1}$
-has one whenever $n$ is a prime power, while $K_7$, $K_{11}$ and $K_{13}$ do
-not.
+labeling. By Singer's theorem~\cite{bjl}, $K_{n+1}$ has one whenever $n$ is
+a prime power; $K_7$, $K_{11}$ and $K_{13}$ do
+not~\cite[\S7.2.2.3]{knuth-pre}.
 
 For a graph with a natural vertex partition, such as a complete multipartite
 graph, the conditions become quadratic Diophantine equations in the numbers
@@ -694,20 +694,20 @@ parity. (For odd $N$ this is already Bos\'ak's condition: all degrees are
 even and $m=4N+6\equiv2\pmod4$.) The clique vertices have odd degree in Corollary~\ref{cor:splitparity},
 so Bos\'ak's condition does not apply there.
 
-Evaluating also at $z=i$ gives a second family. It is the counterpart of
-Corollary~\ref{cor:modthree} for the Gaussian integers: there the form
-$u^2-uv+v^2$ is the norm of $u+v\omega$, the value at $z=\omega$ of the sum
-of $z^{f(v)}$, written in the basis $1,\omega$.
+Evaluating also at $z=i$ gives two more families. They are the Gaussian
+counterpart of Corollary~\ref{cor:modthree}, whose form $u^2-uv+v^2$ is the
+norm of $u+v\omega$ ($\omega=e^{2\pi i/3}$), the value at $z=\omega$ of
+$\sum_wz^{f(w)}$.
 
 \mgpt\begin{corollary}[a Gaussian-integer obstruction]\label{cor:gauss}
 Let $k\ge0$ and $t\ge1$ with $k+t$ odd. Then $K_{8k+6}\vee\overline K_{2t}$
-is not graceful. If $k$ is even, it remains not graceful after deleting any
-one edge of the clique.
+is not graceful. If $k$ is even, the same holds after deleting any one edge
+of the clique.
 \end{corollary}
 
 \begin{proof}
 Put $s=8k+6$ and $N=2t$; then $m=\binom s2+sN\equiv3\pmod4$. Let $C(z)$ and
-$X(z)$ be the sums of $z^{f(v)}$ over the clique and over the independent
+$X(z)$ be the sums of $z^{f(w)}$ over the clique and over the independent
 set. For $|z|=1$ the identity~\eqref{eq:master} reads
 \[
  |C(z)|^2-s+2\operatorname{Re}\bigl(C(z)\overline{X(z)}\bigr)
@@ -718,54 +718,63 @@ $p^2+2pq=2k+1$. So $p$ is odd, which makes the numbers $4k+3\pm p$ of even
 and of odd clique labels both even, and $q\equiv k\pmod2$. Hence
 $C(i)=2u+2vi$ with $u,v\in\ZZ$. Write $X(i)=x+yi$; then $x$ and $y$ have
 the parities of the numbers $t\pm q$ of even and of odd labels in the
-independent set, so both are odd. At $z=i$ the right side is $-2$, because
-$m\equiv3\pmod4$, and the identity becomes
+independent set, so both are odd, since $t+q\equiv t+k$ is odd. At $z=i$ the
+right side is $-2$, because $m\equiv3\pmod4$, and the identity becomes
 \[
  u^2+v^2+ux+vy=2k+1 .
 \]
 But $u(u+x)$ and $v(v+y)$ are even, since $x$ and $y$ are odd.
 
 If an edge $ab$ of the clique is deleted, then $m$ drops by one and the left
-side gains the term $-2\operatorname{Re}z^{f(a)-f(b)}$. At $z=-1$, if $f(a)$
-and $f(b)$ had the same parity, we would get $p^2+2pq=2k+2$, so $p=2p'$ and
-$2p'(p'+q)=k+1$, which is odd. So $f(a)-f(b)$ is odd, the extra term
-vanishes at $z=i$, and the same equations as before result.
+side gains the term $-2\operatorname{Re}z^{f(a)-f(b)}$; since
+$m-1\equiv2\pmod4$, the right side becomes $0$ at $z=-1$ and stays $-2$ at
+$z=i$. At $z=-1$, if $f(a)$ and $f(b)$ had the same parity, we would get
+$p^2+2pq=2k+2$, so $p=2p'$ and $2p'(p'+q)=k+1$, which is odd. So
+$f(a)-f(b)$ is odd, the extra term vanishes at $z=i$, and the same equations
+as before result.
 \end{proof}
 
-The same family also follows from Proposition~\ref{prop:iterated} at level
-$j=1$: the parities forced at $z=-1$ make every degree of $G_1$ even, while
-$m_1\equiv1\pmod4$. Neither argument reaches $K_6\vee\overline K_4$, which is
-not graceful by an exhaustive search: it passes the iterated parity test, and
-its residue equations, with capacities, are solvable for every $q\le16$.
+The identity at the fourth roots of unity amounts to the residue counts
+modulo~$4$, which are levels $0$ and $1$ of Proposition~\ref{prop:iterated};
+so the same family also follows from that proposition: the parities forced at
+$z=-1$ make every degree of $G_1$ even, while $m_1\equiv1\pmod4$. Neither
+argument reaches $K_6\vee\overline K_4$, which is not graceful by an
+exhaustive search: it passes the iterated parity test, and its residue
+equations, with capacities, are solvable for every $q\le16$.
 
-The same two evaluations exclude a family next to the graceful graphs
-$K_{1,1,m,n}$ of the Beutner--Harborth conjecture (Section~\ref{sec:open}).
-Golomb's condition does not exclude it.
+The same two evaluations exclude a relative of the graceful graphs
+$K_{1,1,a,b}=K_2\vee K_{a,b}$ of the Beutner--Harborth conjecture
+(Section~\ref{sec:open}), with four singleton parts instead of two.
 
 \mnew\begin{corollary}[four singletons and two parts]\label{cor:gausstwo}
-If $a\equiv b\equiv2\pmod4$, then $K_{1,1,1,1,a,b}=K_4\vee K_{a,b}$ is not
-graceful.
+If $a\equiv b\equiv2\pmod4$, then $K_{1,1,1,1,a,b}$, that is,
+$K_4\vee K_{a,b}$, is not graceful.
 \end{corollary}
 
 \begin{proof}
-Here $m=6+4(a+b)+ab\equiv2\pmod8$. Let $T(z)$, $A(z)$, $B(z)$ and $C(z)$ be
-the sums of $z^{f(v)}$ over all vertices, over the parts of sizes $a$ and
+Here $m=6+4(a+b)+ab\equiv2\pmod8$. Let $T(z)$, $P(z)$, $Q(z)$ and $C(z)$ be
+the sums of $z^{f(w)}$ over all vertices, over the parts of sizes $a$ and
 $b$, and over the four singletons. The non-edges are the pairs inside the two
 large parts, so for $|z|=1$ the identity~\eqref{eq:master} reads
 \[
- |T(z)|^2-|A(z)|^2-|B(z)|^2-4=\sum_{0<|j|\le m}z^j .
+ |T(z)|^2-|P(z)|^2-|Q(z)|^2-4=\sum_{0<|j|\le m}z^j .
 \]
-At $z=-1$ the right side is $0$, and $T$, $A$, $B$ are even there; with
-$T(-1)=2\tau$, $A(-1)=2\alpha$ and $B(-1)=2\beta$ we get
+At $z=-1$ the right side is $0$, and $T$, $P$, $Q$ are even there; with
+$T(-1)=2\tau$, $P(-1)=2\alpha$ and $Q(-1)=2\beta$ we get
 $\tau^2=1+\alpha^2+\beta^2$. Modulo~$4$ this forces $\alpha$ and $\beta$ even
 and $\tau$ odd. Hence each large part has an odd number of even labels and an
 odd number of odd labels, and $C(-1)\equiv2\pmod4$, so the singletons split
-$3+1$ by parity. Consequently $A(i)$, $B(i)$, $C(i)$, and therefore
+$3+1$ by parity. Consequently $P(i)$, $Q(i)$, $C(i)$, and therefore
 $T(i)$, all have odd real and imaginary parts, and such a Gaussian integer has
 squared modulus $\equiv2\pmod8$. At $z=i$ the right side is $-2$, because
-$m\equiv2\pmod4$, so $|T(i)|^2-|A(i)|^2-|B(i)|^2=2$; but the left side is
+$m\equiv2\pmod4$, so $|T(i)|^2-|P(i)|^2-|Q(i)|^2=2$; but the left side is
 $\equiv2-2-2\equiv6\pmod8$.
 \end{proof}
+
+As with Corollary~\ref{cor:gauss}, level~$1$ of
+Proposition~\ref{prop:iterated} gives the same family: the parities forced at
+$z=-1$ make every degree of $G_1$ even, while $m_1=m/2\equiv1\pmod4$.
+Golomb's condition alone does not exclude these graphs.
 
 \subsection{Limits of parity}\label{sec:cannot}
 
@@ -1269,12 +1278,13 @@ choose $\epsilon$ to fit in between.
 \end{proof}
 
 Counting shows that almost all graphs are not graceful~\cite{gallian}, but
-it does not reach graphs of fixed degree: there are exactly $m!$ graceful
-labelings with $m$ edges~\cite{sheppard} (choose the edge of each
-difference $k$ in one of $m-k+1$ positions; see also~\cite[\S7.2.2.3,
-Theorem~S]{knuth-pre}), so at most $m!$ graceful graphs with $m$ edges and no
-isolated vertices, and for fixed degree $d$ this exceeds the number of
-$d$-regular graphs with $m$ edges.
+it does not reach graphs of fixed degree: there are exactly $m!$ graphs on
+the vertex set $\{0,\dots,m\}$ whose $m$ edges have the differences
+$1,\dots,m$~\cite{sheppard} (choose the edge of each difference $k$ in one of
+$m-k+1$ positions; see also~\cite[\S7.2.2.3, Theorem~S]{knuth-pre}), so at
+most $m!$ graceful graphs with $m$ edges and no isolated vertices, and for
+fixed degree $d$ this exceeds the number of $d$-regular graphs with $m$
+edges, up to isomorphism.
 
 \mnew\begin{corollary}[more spectral families]\label{cor:spec2}
 The following graphs are not graceful:
@@ -1799,7 +1809,7 @@ $K_n\square P_r$ and $K_n\square C_r$ are ungraceful for $n\ge13$; this was
 reported by Knuth~\cite{knuth-err}. Earlier, Knuth's note~\cite{knuth-coups},
 building on searches by Smith and Puget, gave computer proofs that
 $K_n\square P_2$, $K_n\square P_3$ and $K_n\square C_3$ are not graceful for
-$n\ge6$, $n\ge7$ and $n\ge6$; $K_5\square P_2$ and $K_6\square P_3$ each have
+$n\ge6$, $n\ge7$ and $n\ge6$, respectively; $K_5\square P_2$ and $K_6\square P_3$ each have
 a unique graceful labeling up to symmetry. Ma and
 Yi~\cite{mayi} have used the same Dirichlet-kernel obstruction for families
 of Golomb rulers. Liu, Feng, Wang and Zhang settled the four-clique
@@ -1880,9 +1890,10 @@ revision.
   $K_5\square K_6$? (Knuth found by exhaustive search that $K_4\square K_4$
   is graceful, while $K_4\square K_5$ and $K_5\square K_5$ are
   not~\cite[\S7.2.2.3, exercise~88]{knuth-pre}.) Is the $q$-Kneser graph
-  $K_2(4,2)$? The KP graphs $K_n\square P_r$ are known to be ungraceful for
-  $n\ge13$, and for $n\ge6$ when $r\le3$ (Section~\ref{sec:provenance}); what
-  happens for $7\le n\le12$ and $r\ge4$?
+  $K_2(4,2)$? The graphs $K_n\square P_r$ are ungraceful for $n\ge6$ when
+  $r=2$, $n\ge7$ when $r=3$, $n\ge11$ when $r=4$, $n\ge12$ when $r=5$, and
+  $n\ge13$ for every $r$ (Section~\ref{sec:provenance}); what are the
+  thresholds for $r\ge4$?
 \item Can a \emph{fixed} modulus, with capacities, exclude an infinite
   subfamily that the other tools miss? Which complete graphs pass the iterated
   parity test at every level?
