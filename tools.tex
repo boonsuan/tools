@@ -169,6 +169,7 @@ decompositions into an odd number of $K_5$'s & always & Cor.~\ref{cor:decomp}\\
 graphs split into two or three $K_4$'s & any overlap & \cite{bkt}; Prop.~\ref{prop:iterated}\\
 $K_s\vee\overline K_{2t}$ & $s\equiv8,10\pmod{16}$ & Cor.~\ref{cor:splitparity}\gpt\\
 $K_{8k+6}\vee\overline K_{2t}$ & $k+t$ odd & Cor.~\ref{cor:gauss}\gpt\\
+$K_{1,1,1,1,a,b}$ & $a\equiv b\equiv2\pmod4$ & Cor.~\ref{cor:gausstwo}\new\\
 \midrule
 \multicolumn{3}{@{}l}{\emph{Tool II: positivity, with clique and density certificates}}\\
 complete graphs $K_n$ & $n\ge5$ & Golomb~\cite{golomb}; Cor.~\ref{cor:cliques}\\
@@ -628,7 +629,12 @@ to gracefulness, since then a residue determines the label. Without the capaciti
 $\{0,1,3,8,12,18\}$ modulo $31$ have every nonzero difference exactly once, so
 they satisfy the full residue counts at $q=2m+1$, although $K_6$ is not
 graceful: the label $18$ lies outside $[0,15]$. (This is a cyclic, not a
-perfect, difference set; compare Remark~\ref{rem:windmills}.)
+perfect, difference set; compare Remark~\ref{rem:windmills}.) Distinct
+residues modulo $2m+1$ with these counts form a $\rho$-labeling
+(Section~\ref{sec:dictionary}), which Knuth calls a \emph{rainbow graceful}
+labeling~\cite[\S7.2.2.3]{knuth-pre}. By Singer's difference sets, $K_{n+1}$
+has one whenever $n$ is a prime power, while $K_7$, $K_{11}$ and $K_{13}$ do
+not.
 
 For a graph with a natural vertex partition, such as a complete multipartite
 graph, the conditions become quadratic Diophantine equations in the numbers
@@ -731,6 +737,35 @@ $j=1$: the parities forced at $z=-1$ make every degree of $G_1$ even, while
 $m_1\equiv1\pmod4$. Neither argument reaches $K_6\vee\overline K_4$, which is
 not graceful by an exhaustive search: it passes the iterated parity test, and
 its residue equations, with capacities, are solvable for every $q\le16$.
+
+The same two evaluations exclude a family next to the graceful graphs
+$K_{1,1,m,n}$ of the Beutner--Harborth conjecture (Section~\ref{sec:open}).
+Golomb's condition does not exclude it.
+
+\mnew\begin{corollary}[four singletons and two parts]\label{cor:gausstwo}
+If $a\equiv b\equiv2\pmod4$, then $K_{1,1,1,1,a,b}=K_4\vee K_{a,b}$ is not
+graceful.
+\end{corollary}
+
+\begin{proof}
+Here $m=6+4(a+b)+ab\equiv2\pmod8$. Let $T(z)$, $A(z)$, $B(z)$ and $C(z)$ be
+the sums of $z^{f(v)}$ over all vertices, over the parts of sizes $a$ and
+$b$, and over the four singletons. The non-edges are the pairs inside the two
+large parts, so for $|z|=1$ the identity~\eqref{eq:master} reads
+\[
+ |T(z)|^2-|A(z)|^2-|B(z)|^2-4=\sum_{0<|j|\le m}z^j .
+\]
+At $z=-1$ the right side is $0$, and $T$, $A$, $B$ are even there; with
+$T(-1)=2\tau$, $A(-1)=2\alpha$ and $B(-1)=2\beta$ we get
+$\tau^2=1+\alpha^2+\beta^2$. Modulo~$4$ this forces $\alpha$ and $\beta$ even
+and $\tau$ odd. Hence each large part has an odd number of even labels and an
+odd number of odd labels, and $C(-1)\equiv2\pmod4$, so the singletons split
+$3+1$ by parity. Consequently $A(i)$, $B(i)$, $C(i)$, and therefore
+$T(i)$, all have odd real and imaginary parts, and such a Gaussian integer has
+squared modulus $\equiv2\pmod8$. At $z=i$ the right side is $-2$, because
+$m\equiv2\pmod4$, so $|T(i)|^2-|A(i)|^2-|B(i)|^2=2$; but the left side is
+$\equiv2-2-2\equiv6\pmod8$.
+\end{proof}
 
 \subsection{Limits of parity}\label{sec:cannot}
 
@@ -1234,10 +1269,12 @@ choose $\epsilon$ to fit in between.
 \end{proof}
 
 Counting shows that almost all graphs are not graceful~\cite{gallian}, but
-it does not reach graphs of fixed degree: there are at most $m!$ graceful
-graphs with $m$ edges and no isolated vertices (choose the edge of each
-difference $k$ in one of $m-k+1$ positions), and for fixed degree $d$ this
-exceeds the number of $d$-regular graphs with $m$ edges.
+it does not reach graphs of fixed degree: there are exactly $m!$ graceful
+labelings with $m$ edges~\cite{sheppard} (choose the edge of each
+difference $k$ in one of $m-k+1$ positions; see also~\cite[\S7.2.2.3,
+Theorem~S]{knuth-pre}), so at most $m!$ graceful graphs with $m$ edges and no
+isolated vertices, and for fixed degree $d$ this exceeds the number of
+$d$-regular graphs with $m$ edges.
 
 \mnew\begin{corollary}[more spectral families]\label{cor:spec2}
 The following graphs are not graceful:
@@ -1756,10 +1793,14 @@ a recursive construction~\cite{mathon}.
 
 \subsection*{Recent work}
 In 2026 Shisheng Li applied the R\'edei--R\'enyi argument to graphs built from
-cliques, with one sum per clique. He proved that $K_n\square P_4$ is
-ungraceful for $n\ge11$, and that $K_n\square P_r$ and $K_n\square C_r$ are
-ungraceful for $n\ge13$; this was reported by Knuth~\cite{knuth-err}, whose
-note~\cite{knuth-coups} gives the background on these graphs. Ma and
+cliques, with one sum per clique. He proved that $K_n\square P_4$ and
+$K_n\square P_5$ are ungraceful for $n\ge11$ and $n\ge12$, and that
+$K_n\square P_r$ and $K_n\square C_r$ are ungraceful for $n\ge13$; this was
+reported by Knuth~\cite{knuth-err}. Earlier, Knuth's note~\cite{knuth-coups},
+building on searches by Smith and Puget, gave computer proofs that
+$K_n\square P_2$, $K_n\square P_3$ and $K_n\square C_3$ are not graceful for
+$n\ge6$, $n\ge7$ and $n\ge6$; $K_5\square P_2$ and $K_6\square P_3$ each have
+a unique graceful labeling up to symmetry. Ma and
 Yi~\cite{mayi} have used the same Dirichlet-kernel obstruction for families
 of Golomb rulers. Liu, Feng, Wang and Zhang settled the four-clique
 windmills~\cite{lfwz}.
@@ -1798,7 +1839,9 @@ Theorem~\ref{thm:kg} and Corollary~\ref{cor:kg} for $K(11,2)$, the
 boundary-gap terms in Theorem~\ref{thm:core} and
 Corollary~\ref{cor:packing}, and the leaf lemma. Corollary~\ref{cor:gauss}
 was found by GPT-6 Pro later, after the author suggested evaluating the
-identity at other points. The verification scripts
+identity at other points; Claude then found Corollary~\ref{cor:gausstwo} by a
+computer search of the residue equations modulo $3$, $4$, $5$ and $8$ for
+complete multipartite graphs. The verification scripts
 were written by Claude for version~2, partly adapted from scripts in that
 revision.
 
@@ -1833,8 +1876,13 @@ revision.
   an initial segment of length $m-c$.
 \item Determine which even $t\ge12$ make $K_5^{(t)}$ graceful. Are the
   $K_4$-snakes graceful for every $t\ge4$?
-\item Find the true thresholds in Table~\ref{tab:families}. For example, are the Paley graphs $P(17)$ and $P(29)$ graceful? Are $K_4\square K_7$ and $K_5\square K_6$? Is
-  the $q$-Kneser graph $K_2(4,2)$?
+\item Find the true thresholds in Table~\ref{tab:families}. For example, are the Paley graphs $P(17)$ and $P(29)$ graceful? Are $K_4\square K_7$ and
+  $K_5\square K_6$? (Knuth found by exhaustive search that $K_4\square K_4$
+  is graceful, while $K_4\square K_5$ and $K_5\square K_5$ are
+  not~\cite[\S7.2.2.3, exercise~88]{knuth-pre}.) Is the $q$-Kneser graph
+  $K_2(4,2)$? The KP graphs $K_n\square P_r$ are known to be ungraceful for
+  $n\ge13$, and for $n\ge6$ when $r\le3$ (Section~\ref{sec:provenance}); what
+  happens for $7\le n\le12$ and $r\ge4$?
 \item Can a \emph{fixed} modulus, with capacities, exclude an infinite
   subfamily that the other tools miss? Which complete graphs pass the iterated
   parity test at every level?
@@ -2114,12 +2162,17 @@ A. Rosa, On certain valuations of the vertices of a graph, in
 Gordon and Breach, New York and Dunod, Paris, 1967, 349--355.
 \bibitem{rosa65}
 A. Rosa, \emph{O cyklick\'ych rozkladoch kompletn\'eho grafu}, Kandid\'atska
-dizerta\v{c}n\'a pr\'aca, \v{C}SAV, Bratislava, 1965.
+dizerta\v{c}n\'a pr\'aca, \v{C}SAV, Bratislava, 1965; scans at
+\url{https://www-cs-faculty.stanford.edu/~knuth/A.Rosa-thesis-page0-20.pdf}
+and three further files there.
 \bibitem{rudin}
 W. Rudin, \emph{Fourier Analysis on Groups}, Interscience, 1962.
 \bibitem{shearer}
 J.~B. Shearer, Improved LP lower bounds for difference triangle sets,
 \emph{Electron.\ J. Combin.} 6 (1999), \#R31; \url{https://www.combinatorics.org/ojs/index.php/eljc/article/view/v6i1r31}.
+\bibitem{sheppard}
+D.~A. Sheppard, The factorial representation of balanced labelled graphs,
+\emph{Discrete Math.} 15 (1976), 379--388; \doi{10.1016/0012-365X(76)90051-0}.
 \bibitem{skolem}
 T. Skolem, On certain distributions of integers in pairs with given
 differences, \emph{Math.\ Scand.} 5 (1957), 57--68; \doi{10.7146/math.scand.a-10490}.

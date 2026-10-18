@@ -16,7 +16,7 @@ python run_all.py
 
 Python 3.9 or later, standard library only. The run takes about ten seconds and
 lists every check next to the paper result it belongs to, ending with
-`46 of 46 checks passed`. The exit status is nonzero if anything fails.
+`47 of 47 checks passed`. The exit status is nonzero if anything fails.
 
 ```
 python run_all.py --list     # list the checks without running them
@@ -71,7 +71,7 @@ minimum of the Dirichlet kernel. No proof in the paper depends on them.
 | `polynomial.py` | a small exact polynomial class for checking identities |
 | `graphs.py` | graph constructions (cliques, complete multipartite graphs, products, Kneser graphs), the two sides of the master identity, and the test for a graceful labeling |
 | `sec2_identity.py` | Figure 1 and identity (1); Lemma 2.1; the rho-labelings of Section 2.1 |
-| `sec3_parity.py` | Section 3 (Tool I): Bosak's condition, Golomb's cut and iterated parity, residues, Corollaries 3.7 and 3.8, Section 3.5 |
+| `sec3_parity.py` | Section 3 (Tool I): Bosak's condition, Golomb's cut and iterated parity, residues, Corollaries 3.7-3.10, Section 3.5 |
 | `sec4_positivity.py` | Sections 4.1-4.6 (Tool II): Corollaries 4.4-4.14, Theorem 4.6, Proposition 4.10, the K4-snakes |
 | `sec4_planar_kneser.py` | Section 4.7 and Appendix B: Theorem 4.18 and Corollary 4.19 for K(11,2) |
 | `sec5_interval.py` | Section 5 (Tool III): Theorem 5.1 to Corollary 5.5 |
@@ -99,6 +99,7 @@ can be read from top to bottom alongside the paper.
 | Corollary 3.7 | `sec3_parity.check_corollary_3_7_modulus_3` |
 | Identity (2), Corollary 3.8 | `sec3_parity.check_identity_2_on_examples`, `check_corollary_3_8` |
 | Corollary 3.9 and the remark after it (K6 v complement(K4)) | `sec3_parity.check_corollary_3_9_gaussian`, `check_K6_join_4` |
+| Corollary 3.10 | `sec3_parity.check_corollary_3_10` |
 | Section 3.5 | `sec3_parity.check_windmill_cut_counts`, `check_residue_equations_up_to_12` |
 | Decimal constants (Section 4, Table 1) | `sec4_positivity.check_decimal_constants` |
 | Corollary 4.4 | `sec4_positivity.check_corollary_4_4` |

@@ -15,6 +15,9 @@ Claims checked here
 * Corollary 3.9: each step of the proof (the identity at z = -1 and z = i),
   and, after it, that K_6 v complement(K_4) is not graceful although it
   passes the iterated parity test and the residue equations for q <= 16.
+* Corollary 3.10: each step of the proof; the conclusion on small cases;
+  that Golomb's condition does not exclude these graphs; and an exhaustive
+  search showing that K_{1,1,1,1,2,2} is not graceful.
 * Section 3.5: the windmill cut counts, and the archived residue maps showing
   that the residue equations, together with the capacities, are solvable for
   every modulus 2 <= q <= 12 for K_{3,3,3}, K_{2,2,2,2,2}, K_{4,4,4} and
@@ -30,7 +33,7 @@ say which period.
 """
 from collections import Counter
 from functools import lru_cache
-from itertools import product
+from itertools import combinations, product
 from math import comb, isqrt
 from pathlib import Path
 import json
@@ -529,6 +532,114 @@ def check_K6_join_4():
 
 
 # ----------------------------------------------------------------------------
+# Section 3.4: Corollary 3.10, K_{1,1,1,1,a,b} with a = b = 2 (mod 4)
+# ----------------------------------------------------------------------------
+
+def check_corollary_3_10():
+    """Corollary 3.10: K_{1,1,1,1,a,b} is not graceful when a = b = 2 (mod 4).
+    We check each step of the proof, then the conclusion on small cases."""
+    # m = 6 + 4(a+b) + ab = 2 (mod 8); this depends on a, b mod 8.
+    for a, b in product((2, 6), repeat=2):
+        check((6 + 4 * (a + b) + a * b) % 8 == 2, "m = 2 (mod 8)")
+    # At z = -1 (right side 0): (2 tau)^2 - (2 alpha)^2 - (2 beta)^2 - 4 = 0.
+    tau, alpha, beta = variables("tau alpha beta")
+    check((2 * tau) ** 2 - (2 * alpha) ** 2 - (2 * beta) ** 2 - 4
+          == 4 * (tau * tau - 1 - alpha * alpha - beta * beta), "tau^2 = 1 + alpha^2 + beta^2")
+    # Modulo 4 this forces alpha, beta even and tau odd (depends on residues mod 4).
+    for t_, a_, b_ in product(range(4), repeat=3):
+        if (t_ * t_ - 1 - a_ * a_ - b_ * b_) % 4 == 0:
+            check(a_ % 2 == 0 and b_ % 2 == 0 and t_ % 2 == 1, "alpha, beta even, tau odd")
+    # A(-1) = 2 alpha = 0 (mod 4) and a = 2 (mod 4) make the numbers (a +- A(-1))/2
+    # of even and odd labels in that part odd; C(-1) = T - A - B = 2 (mod 4)
+    # means the four singletons split 3 + 1.  So A(i), B(i), C(i), and T(i),
+    # have odd real and imaginary parts, and x^2 + y^2 = 2 (mod 8) for x, y odd:
+    check(all((x * x + y * y) % 8 == 2 for x, y in product(range(1, 8, 2), repeat=2)),
+          "odd real and imaginary parts give squared modulus 2 (mod 8)")
+    # At z = i the right side is -2 (m = 2 mod 4), so |T|^2 - |A|^2 - |B|^2 = 2,
+    # while the left side is 2 - 2 - 2 = 6 (mod 8):
+    check(right_side_at_i(2) == (-2, 0) and (2 - 2 - 2) % 8 == 6 != 2, "the contradiction")
+
+    # Finite check of the conclusion: no residue counts mod 4 satisfy the
+    # identity at z = -1 and z = i, for small a, b.
+    for a, b in [(2, 2), (2, 6), (6, 6), (2, 10)]:
+        check(not multipartite_identity_solvable_at_minus_one_and_i(a, b),
+              f"K_(1,1,1,1,{a},{b}) at z = -1 and z = i")
+    # Golomb's condition does not exclude these graphs: a parity split with
+    # the required ceil(m/2) cut edges exists.
+    for a, b in [(2, 2), (2, 6), (6, 6), (6, 10)]:
+        check(golomb_cut_exists_multipartite([1, 1, 1, 1, a, b]),
+              f"Golomb's condition holds for K_(1,1,1,1,{a},{b})")
+    # And the smallest member, K_{1,1,1,1,2,2} (m = 26), is not graceful:
+    check(not K_1_1_1_1_2_2_is_graceful(), "K_{1,1,1,1,2,2} should not be graceful")
+
+
+def multipartite_identity_solvable_at_minus_one_and_i(a, b):
+    """Residue counts mod 4: s for the four singletons, x and y for the parts
+    of sizes a and b.  Test |T|^2 - |A|^2 - |B|^2 - 4 = right side at z = -1, i."""
+    m = 6 + 4 * (a + b) + a * b
+    targets = [(sum((-1) ** j for j in range(-m, m + 1) if j != 0), 0), right_side_at_i(m)]
+    powers = [lambda r: ((-1) ** r, 0), i_power]
+
+    def value(counts, power):
+        re = im = 0
+        for r, count in enumerate(counts):
+            pr, pi = power(r)
+            re, im = re + count * pr, im + count * pi
+        return re, im
+
+    for s in compositions(4, 4):
+        for x in compositions(a, 4):
+            for y in compositions(b, 4):
+                ok = True
+                for power, target in zip(powers, targets):
+                    A, B, S = value(x, power), value(y, power), value(s, power)
+                    T = (A[0] + B[0] + S[0], A[1] + B[1] + S[1])
+                    left = (T[0] ** 2 + T[1] ** 2) - (A[0] ** 2 + A[1] ** 2) - (B[0] ** 2 + B[1] ** 2) - 4
+                    if (left, 0) != target:
+                        ok = False
+                        break
+                if ok:
+                    return True
+    return False
+
+
+def golomb_cut_exists_multipartite(parts):
+    """Is there a choice of odd_i in [0, a_i] (odd labels in part i) whose cut,
+    the number of edges between odd and even labels, is ceil(m/2)?"""
+    n = sum(parts)
+    m = (n * n - sum(p * p for p in parts)) // 2
+    for odd in product(*(range(p + 1) for p in parts)):
+        total_odd = sum(odd)
+        cut = sum(o * ((n - total_odd) - (p - o)) for o, p in zip(odd, parts))
+        if cut == (m + 1) // 2:
+            return True
+    return False
+
+
+def K_1_1_1_1_2_2_is_graceful():
+    """K_{1,1,1,1,2,2} is K_8 minus two disjoint edges, with m = 26.  It is
+    graceful iff some 8 labels in [0, 26] (including 0 and 26) have 28
+    pairwise differences from which two DISJOINT pairs can be removed to
+    leave exactly 1, ..., 26."""
+    m = 26
+    for middle in combinations(range(1, m), 6):
+        labels = (0,) + middle + (m,)
+        by_difference = {}
+        for x, y in combinations(labels, 2):
+            by_difference.setdefault(y - x, []).append((x, y))
+        if len(by_difference) != m:
+            continue
+        repeated = [pairs for pairs in by_difference.values() if len(pairs) > 1]
+        if len(repeated) == 2:
+            removals = [(p, q) for p in repeated[0] for q in repeated[1]]
+        else:                                    # one difference occurring three times
+            removals = list(combinations(repeated[0], 2))
+        if any(not set(p) & set(q) for p, q in removals):
+            return True
+    return False
+
+
+# ----------------------------------------------------------------------------
 # Section 3.5: limits of parity
 # ----------------------------------------------------------------------------
 
@@ -587,6 +698,7 @@ CHECKS = [
     ("Cor. 3.9", "the Gaussian-integer obstruction", check_corollary_3_9_gaussian),
     ("Sec. 3.4", "K_6 v complement(K_4): not graceful, yet passes parity and residues",
      check_K6_join_4),
+    ("Cor. 3.10", "K_(1,1,1,1,a,b) with a = b = 2 (mod 4)", check_corollary_3_10),
     ("Sec. 3.5", "cut counts for K_5 windmills", check_windmill_cut_counts),
     ("Sec. 3.5", "residue maps with capacities for four graphs, q <= 12",
      check_residue_equations_up_to_12),
