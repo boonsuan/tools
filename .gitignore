@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+search_output.txt
+residue_search
+residue_search.exe
+*.aux
+*.log
+*.out

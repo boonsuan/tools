@@ -1,0 +1,38 @@
+name: verify
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  checks:
+    name: run_all.py (Python ${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.9", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Run every check
+        working-directory: verification
+        run: python run_all.py
+
+  residue-maps:
+    name: residue maps reproduce from the search
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Rerun the search and rebuild the archive
+        working-directory: verification
+        run: |
+          g++ -O2 -o residue_search discovery/find_residue_witnesses.cpp
+          ./residue_search > search_output.txt
+          python discovery/archive_residue_witnesses.py search_output.txt --output /tmp/residue_witnesses.json
+          cmp /tmp/residue_witnesses.json data/residue_witnesses.json

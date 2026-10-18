@@ -1,0 +1,384 @@
+"""Section 3 of the paper: parity and residues (Tool I).
+
+Claims checked here
+-------------------
+* Section 3.1 and Example 3.4: the families excluded by Bosak's condition
+  (cycles, complete graphs, windmills).
+* Section 3.2: the cut sizes of K_8; Example 3.6 (K_9); and the list of
+  complete graphs K_n, 4 <= n <= 30, that survive Golomb's condition and the
+  iterated parity test of Proposition 3.5.
+* Section 3.3 and Corollary 3.7: the cyclic difference set for K_6 modulo 31,
+  and the modulus-3 obstruction for n = 6, 10, 11 (mod 12).
+* Section 3.4 and Corollary 3.8: identity (2) on actual graceful labelings,
+  the arithmetic of the proof of Corollary 3.8, and the remark on
+  K_{1,1,1,1,N}.
+* Section 3.5: the windmill cut counts, and the archived residue maps showing
+  that the residue equations, together with the capacities, are solvable for
+  every modulus 2 <= q <= 12 for K_{3,3,3}, K_{2,2,2,2,2}, K_{4,4,4} and
+  K_{3,4,5}.
+
+Throughout, m is the number of edges and "Bosak's condition" is
+Corollary 3.3: if every degree is even then m = 0 or 3 (mod 4).
+
+Several claims below are "for all n" statements whose truth depends only on
+n modulo some period (for example C(n,2) mod 4 depends only on n mod 8).
+For those we check one full period, which proves the claim; the comments
+say which period.
+"""
+from collections import Counter
+from functools import lru_cache
+from itertools import product
+from math import comb, isqrt
+from pathlib import Path
+import json
+
+from exact import check
+from polynomial import Poly
+from graphs import (clique_edges, complete_multipartite, required_differences,
+                    signed_differences)
+
+DATA = Path(__file__).resolve().parent / "data"
+
+
+def bosak_excludes(m):
+    """True when Bosak's condition fails for m edges, i.e. m = 1 or 2 (mod 4),
+    so that a graph with m edges and all degrees even is not graceful."""
+    return m % 4 in (1, 2)
+
+
+# ----------------------------------------------------------------------------
+# Section 3.1 and Example 3.4: Bosak's condition
+# ----------------------------------------------------------------------------
+
+def check_bosak_examples():
+    """Section 3.1: K_n is excluded when n = 5 or 7 (mod 8).  (For C_n, with
+    all degrees 2 and m = n, the claim n = 1, 2 (mod 4) is Bosak's condition
+    verbatim.)  Example 3.4: K_3^(t), with m = 3t, is excluded when
+    t = 2, 3 (mod 4), and K_5^(t), with m = 10t, when t is odd."""
+    # K_n with n odd has all degrees n - 1 even.  C(n,2) mod 4 depends only
+    # on n mod 8, so one period proves the claim for all n; among odd n the
+    # excluded classes are exactly 5 and 7.
+    excluded = [n for n in range(1, 9, 2) if bosak_excludes(comb(n, 2))]
+    check(excluded == [5, 7], f"K_n with n odd: excluded classes mod 8 are {excluded}")
+    # Windmills: all degrees are even (n - 1, or t(n - 1) at the centre).
+    # 3t mod 4 depends on t mod 4, and 10t mod 4 on t mod 2.
+    excluded = [t for t in range(4) if bosak_excludes(3 * t)]
+    check(excluded == [2, 3], f"K_3^(t): excluded classes mod 4 are {excluded}")
+    check(bosak_excludes(10 * 1), "K_5^(t) with t odd: m = 10t = 2 (mod 4)")
+
+
+# ----------------------------------------------------------------------------
+# Section 3.2: Golomb's condition and iterated parity for complete graphs
+# ----------------------------------------------------------------------------
+#
+# For K_n, the edges with odd difference form the cut between the vertices
+# with even and with odd labels; if a vertices have even labels, the cut is
+# K_{a,n-a} with a(n-a) edges.  Golomb's condition asks for a cut with exactly
+# ceil(m/2) edges.
+#
+# Iterated parity (Proposition 3.5): after removing that cut, what remains,
+# G_1, is a disjoint union of cliques (here K_a and K_{n-a}), and it must
+# again have a cut with exactly ceil(m_1/2) edges, where m_1 = floor(m/2);
+# and so on.  Splitting a clique K_s as K_a + K_{s-a} cuts a(s-a) of its
+# edges and keeps C(a,2) + C(s-a,2).  A "state" below is the sorted tuple of
+# clique sizes of the current G_j (cliques with fewer than 2 vertices are
+# dropped, since they have no edges).  Removing a cut with ceil(m_j/2) edges
+# is the same as keeping exactly floor(m_j/2) = m_(j+1) edges.
+
+def golomb_cut_exists(n):
+    """Does K_n have a cut K_{a,n-a} with exactly ceil(m/2) edges?"""
+    m = comb(n, 2)
+    return any(a * (n - a) == (m + 1) // 2 for a in range(n + 1))
+
+
+@lru_cache(maxsize=None)
+def next_levels(state):
+    """All states G_(j+1) that can follow the state G_j: split every clique
+    in two so that exactly floor(m_j/2) edges are kept."""
+    m = sum(comb(s, 2) for s in state)
+    target = m // 2
+    # Treat the cliques one at a time, recording (edges kept so far, pieces).
+    options = {(0, ())}
+    for s in state:
+        new_options = set()
+        for kept, pieces in options:
+            for a in range(s // 2 + 1):
+                kept_now = kept + comb(a, 2) + comb(s - a, 2)
+                if kept_now <= target:
+                    new_pieces = pieces + tuple(x for x in (a, s - a) if x >= 2)
+                    new_options.add((kept_now, tuple(sorted(new_pieces))))
+        options = new_options
+    return tuple(sorted({pieces for kept, pieces in options if kept == target}))
+
+
+@lru_cache(maxsize=None)
+def passes_iterated_parity(state):
+    """True if some choice of splittings works at every level, until no
+    edges are left."""
+    if sum(comb(s, 2) for s in state) == 0:
+        return True
+    return any(passes_iterated_parity(following) for following in next_levels(state))
+
+
+def check_K8_and_K9_examples():
+    """Section 3.2: the cuts of K_8 have 7, 12, 15 or 16 edges (or none),
+    never the required 14.  Example 3.6: K_9 passes Golomb's test only with
+    a = 3, leaving K_3 + K_6; the K_6 must then be split 3 + 3; and the
+    resulting three triangles have no cut with 5 edges."""
+    check({a * (8 - a) for a in range(9)} == {0, 7, 12, 15, 16}, "cuts of K_8")
+    check((comb(8, 2) + 1) // 2 == 14, "K_8 needs a cut of 14")
+    check([a for a in range(5) if a * (9 - a) == 18] == [3], "K_9 level 0")
+    check(next_levels((9,)) == ((3, 6),), "level 0 must leave K_3 + K_6")
+    check(next_levels((3, 6)) == ((3, 3, 3),), "level 1 must leave three triangles")
+    check(next_levels((3, 3, 3)) == (), "three triangles have no cut of 5 edges")
+    check(golomb_cut_exists(9) and not passes_iterated_parity((9,)), "K_9")
+
+
+def check_complete_graph_table():
+    """Section 3.2: for 4 <= n <= 30, iterated parity excludes every K_n
+    except n = 4, 6, 11, 18, 25, 27, and Golomb's condition alone also leaves
+    n = 9 and 16.  As a finite sanity check of Golomb's criterion (quoted from
+    his paper), a cut exists exactly when n or n - 2 is a square, n < 200."""
+    golomb = [n for n in range(4, 31) if golomb_cut_exists(n)]
+    iterated = [n for n in range(4, 31) if passes_iterated_parity((n,))]
+    check(iterated == [4, 6, 11, 18, 25, 27], f"iterated parity survivors {iterated}")
+    check(golomb == sorted(iterated + [9, 16]), f"Golomb survivors {golomb}")
+    for n in range(4, 200):
+        square = any(isqrt(x) ** 2 == x for x in (n, n - 2))
+        check(golomb_cut_exists(n) == square, f"Golomb's criterion for K_{n}")
+
+
+# ----------------------------------------------------------------------------
+# Section 3.3: other roots of unity
+# ----------------------------------------------------------------------------
+
+def check_K6_modulo_31():
+    """Section 3.3: {0,1,3,8,12,18} has every nonzero difference modulo 31
+    exactly once, so it satisfies the residue counts for K_6 at q = 31; but
+    18 > 15 = m, so it is not a graceful labeling."""
+    marks = (0, 1, 3, 8, 12, 18)
+    vertices = list(range(6))
+    labels = dict(zip(vertices, marks))
+    edges = clique_edges(vertices)
+    check(signed_differences(edges, labels, 31) == required_differences(15, 31),
+          "the residue counts for K_6 at q = 31")
+    check(signed_differences(edges, labels, 31) == Counter(range(1, 31)),
+          "each nonzero residue mod 31 exactly once")
+    check(max(marks) > comb(6, 2), "the label 18 lies outside [0, 15]")
+
+
+def check_corollary_3_7_modulus_3():
+    """Corollary 3.7: the residue equations mod 3 exclude K_n for
+    n = 6, 10, 11 (mod 12).  We check each step of the proof, and then, as an
+    independent finite check, that the counting equation has no solution."""
+    # Step 1.  With x0 + x1 + x2 = n and sum x_i(x_i - 1) = 2 floor(m/3),
+    # where m = C(n,2) = 3 floor(m/3) + r:  u^2 - uv + v^2 = n - r for
+    # u = x0 - x2, v = x1 - x2.  Two polynomial identities give this:
+    x0, x1, x2 = (Poly.var(name) for name in ("x0", "x1", "x2"))
+    u, v = x0 - x2, x1 - x2
+    n_total = x0 + x1 + x2
+    sum_of_squares = x0 * x0 + x1 * x1 + x2 * x2
+    check(u * u - u * v + v * v == (3 * sum_of_squares - n_total ** 2) / 2,
+          "u^2 - uv + v^2 = (3 sum x_i^2 - n^2)/2")
+    # ...and, substituting sum x_i^2 = n + 2 floor(m/3) = n + 2(m - r)/3
+    # with m = n(n-1)/2, the right side is n - r:
+    n, r = Poly.var("n"), Poly.var("r")
+    m = n * (n - 1) / 2
+    check((3 * (n + 2 * (m - r) / 3) - n * n) / 2 == n - r, "(3 sum x_i^2 - n^2)/2 = n - r")
+
+    # Step 2.  u^2 - uv + v^2 mod 4 depends on u, v mod 4: never 2.
+    check({(a * a - a * b + b * b) % 4 for a in range(4) for b in range(4)} == {0, 1, 3},
+          "values of u^2 - uv + v^2 mod 4")
+
+    # Step 3.  n - r mod 4 depends only on n mod 12 (n mod 4, and r = C(n,2)
+    # mod 3, which depends on n mod 3).  It is 2 exactly for these classes:
+    classes = [n for n in range(12) if (n - comb(n, 2) % 3) % 4 == 2]
+    check(classes == [6, 10, 11], f"classes with n - r = 2 (mod 4): {classes}")
+
+    # Independent finite check: for n < 200 in these classes, no counts
+    # x0 + x1 + x2 = n satisfy sum x_i(x_i - 1) = 2 floor(m/3).
+    # (The corollary claims nothing about other n.)
+    for n in range(2, 200):
+        if n % 12 in (6, 10, 11):
+            m = comb(n, 2)
+            solvable = any(a * (a - 1) + b * (b - 1) + (n - a - b) * (n - a - b - 1)
+                           == 2 * (m // 3)
+                           for a in range(n + 1) for b in range(n + 1 - a))
+            check(not solvable, f"modulus 3 should exclude K_{n}")
+
+    # The remark after the corollary: K_6, K_11 and K_18 survive iterated parity.
+    for n in (6, 11, 18):
+        check(passes_iterated_parity((n,)) and n % 12 in (6, 10, 11), f"K_{n}")
+
+
+# ----------------------------------------------------------------------------
+# Section 3.4: complete split graphs K_s v complement(K_N)
+# ----------------------------------------------------------------------------
+
+def split_graph(s, N):
+    """K_s v complement(K_N): a clique on s vertices, each joined to all N
+    vertices of an independent set.  Returns (clique, independent set, edges)."""
+    clique = [("c", i) for i in range(s)]
+    independent = [("x", i) for i in range(N)]
+    edges = clique_edges(clique) + [(u, x) for u in clique for x in independent]
+    return clique, independent, edges
+
+
+def graceful_labelings(vertices, edges, limit):
+    """Up to `limit` graceful labelings, by straightforward backtracking:
+    give the vertices labels in {0,...,m} one at a time, and reject a label
+    as soon as it repeats an edge difference.  A complete labeling then has
+    m distinct differences in {1,...,m}, which are therefore all of them."""
+    m = len(edges)
+    neighbours = {v: [] for v in vertices}
+    for u, v in edges:
+        neighbours[u].append(v)
+        neighbours[v].append(u)
+    found, labels, used_differences = [], {}, set()
+
+    def extend(i):
+        if len(found) >= limit:
+            return
+        if i == len(vertices):
+            found.append(dict(labels))
+            return
+        v = vertices[i]
+        for x in range(m + 1):
+            if x in labels.values():
+                continue
+            new = [abs(x - labels[w]) for w in neighbours[v] if w in labels]
+            if len(set(new)) == len(new) and not used_differences & set(new):
+                labels[v] = x
+                used_differences.update(new)
+                extend(i + 1)
+                used_differences.difference_update(new)
+                del labels[v]
+
+    extend(0)
+    return found
+
+
+def check_identity_2_on_examples():
+    """Identity (2): S^2 + 2SY = s - 2 epsilon, where S and Y are the sums of
+    (-1)^f(v) over the clique and over the independent set, and
+    epsilon = m mod 2.  As a sanity check of the derivation we confirm it on
+    graceful labelings of small split graphs."""
+    tested = 0
+    for s, N in [(1, 3), (2, 2), (2, 3), (3, 1), (3, 2), (3, 3)]:
+        clique, independent, edges = split_graph(s, N)
+        m = len(edges)
+        for labels in graceful_labelings(clique + independent, edges, limit=20):
+            S = sum((-1) ** labels[v] for v in clique)
+            Y = sum((-1) ** labels[v] for v in independent)
+            check(S * S + 2 * S * Y == s - 2 * (m % 2), f"identity (2), s={s}, N={N}")
+            tested += 1
+    check(tested > 0, "no graceful split graphs were found to test")
+
+
+def identity_2_solvable(s, N):
+    """Is S^2 + 2SY = s - 2 epsilon solvable with S a sum of s signs and Y a
+    sum of N signs?"""
+    m = comb(s, 2) + s * N
+    right_side = s - 2 * (m % 2)
+    return any(S * S + 2 * S * Y == right_side
+               for S in range(-s, s + 1, 2) for Y in range(-N, N + 1, 2))
+
+
+def check_corollary_3_8():
+    """Corollary 3.8: if s = 8 or 10 (mod 16), K_s v complement(K_2t) is not
+    graceful.  We check the steps of the proof, then the remark on
+    K_{1,1,1,1,N}."""
+    # Steps 1-2.  For N even, epsilon = C(s,2) mod 2, which depends on s mod 4.
+    # Writing s = 4k (s = 8 mod 16) or s = 4k + 2 (s = 10 mod 16), the right
+    # side s - 2 epsilon is 4k with k = 2 (mod 4).  This depends on s mod 16:
+    for s in (8, 10):
+        epsilon = comb(s, 2) % 2
+        k = s // 4
+        check(s - 2 * epsilon == 4 * k and k % 4 == 2, f"s = {s} (mod 16)")
+    # Step 3.  With S = 2h: h(h + Y) = k = 2 (mod 4) forces Y odd.  Whether
+    # h(h+Y) = 2 (mod 4) depends only on h and Y mod 4:
+    for h, Y in product(range(4), repeat=2):
+        if h * (h + Y) % 4 == 2:
+            check(Y % 2 == 1, "h(h + Y) = 2 (mod 4) should force Y odd")
+    # But Y is a sum of N = 2t signs, hence even.
+
+    # Finite sanity check of the conclusion: no solutions for s < 130, even N < 60.
+    for s in range(1, 130):
+        if s % 16 in (8, 10):
+            check(not any(identity_2_solvable(s, N) for N in range(2, 60, 2)),
+                  f"Corollary 3.8 for s = {s}")
+
+    # The remark: for K_{1,1,1,1,N} = K_4 v complement(K_N), identity (2) forces
+    # S = +-2 and Y = 0, so N is even.  For odd N, all degrees (3 + N and 4)
+    # are even and m = 4N + 6 = 2 (mod 4), so Bosak's condition applies.
+    # Finite check for N < 60 (the general statement is the same short argument).
+    for N in range(1, 60):
+        m = 6 + 4 * N
+        solutions = {(S, Y) for S in range(-4, 5, 2) for Y in range(-N, N + 1, 2)
+                     if S * S + 2 * S * Y == 4 - 2 * (m % 2)}
+        check(solutions == ({(2, 0), (-2, 0)} if N % 2 == 0 else set()),
+              f"K_(1,1,1,1,{N})")
+        if N % 2 == 1:
+            check((3 + N) % 2 == 0 and bosak_excludes(m), "odd N by Bosak")
+
+
+# ----------------------------------------------------------------------------
+# Section 3.5: limits of parity
+# ----------------------------------------------------------------------------
+
+def check_windmill_cut_counts():
+    """Section 3.5: each K_5 blade of K_5^(t) contributes a(5-a), that is
+    0, 4 or 6 edges, to Golomb's cut, and these can add up to the required
+    ceil(10t/2) = 5t for every even t: give half the blades 4 and half 6."""
+    blade = sorted({a * (5 - a) for a in range(6)})
+    check(blade == [0, 4, 6], "cut contributions of a K_5 blade")
+    # With t even, (t/2) * 4 + (t/2) * 6 = 5t.
+
+
+def check_one_residue_map(record):
+    """One archived map for Section 3.5: residues r(v) mod q of the vertices
+    of K_{parts} such that
+      (a) the residue equations hold: for each j, the number of ordered pairs
+          (u, v), uv an edge, with r(u) - r(v) = j (mod q) equals the number
+          of k in [-m, m], k != 0, with k = j (mod q); and
+      (b) the capacities hold: at most floor((m - j)/q) + 1 vertices have
+          residue j."""
+    parts, q, residues = record["parts"], record["modulus"], record["residues"]
+    vertices, edges = complete_multipartite(parts)
+    check(len(residues) == len(vertices) and all(0 <= x < q for x in residues),
+          "malformed record")
+    residue_of = dict(zip(vertices, residues))     # both are listed part by part
+    m = len(edges)
+    check(signed_differences(edges, residue_of, q) == required_differences(m, q),
+          f"residue equations for {parts}, q = {q}")
+    occupancy = Counter(residues)
+    check(all(occupancy[j] <= (m - j) // q + 1 for j in range(q)),
+          f"capacities for {parts}, q = {q}")
+
+
+def check_residue_equations_up_to_12():
+    """Section 3.5: for each of K_{3,3,3}, K_{2,2,2,2,2}, K_{4,4,4}, K_{3,4,5}
+    and each 2 <= q <= 12, the archive data/residue_witnesses.json holds a map
+    satisfying the residue equations and the capacities (4 x 11 = 44 maps)."""
+    records = json.loads((DATA / "residue_witnesses.json").read_text(encoding="utf-8"))
+    expected = {(parts, q) for parts in [(3, 3, 3), (2, 2, 2, 2, 2), (4, 4, 4), (3, 4, 5)]
+                for q in range(2, 13)}
+    found = [(tuple(record["parts"]), record["modulus"]) for record in records]
+    check(len(found) == len(set(found)) and set(found) == expected,
+          "the archive should contain one map for each graph and each q <= 12")
+    for record in records:
+        check_one_residue_map(record)
+
+
+CHECKS = [
+    ("Sec. 3.1, Ex. 3.4", "families excluded by Bosak's condition", check_bosak_examples),
+    ("Sec. 3.2, Ex. 3.6", "cut sizes of K_8; iterated parity for K_9", check_K8_and_K9_examples),
+    ("Sec. 3.2", "K_n surviving Golomb / iterated parity, 4 <= n <= 30", check_complete_graph_table),
+    ("Sec. 3.3", "K_6 residues modulo 31", check_K6_modulo_31),
+    ("Cor. 3.7", "modulus-3 obstruction for n = 6, 10, 11 (mod 12)", check_corollary_3_7_modulus_3),
+    ("Sec. 3.4, eq. (2)", "identity (2) on graceful split graphs", check_identity_2_on_examples),
+    ("Cor. 3.8", "the parity family of split graphs; K_(1,1,1,1,N)", check_corollary_3_8),
+    ("Sec. 3.5", "cut counts for K_5 windmills", check_windmill_cut_counts),
+    ("Sec. 3.5", "residue maps with capacities for four graphs, q <= 12",
+     check_residue_equations_up_to_12),
+]
