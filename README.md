@@ -2,11 +2,11 @@
 
 [![verify](https://github.com/boonsuan/tools/actions/workflows/verify.yml/badge.svg)](https://github.com/boonsuan/tools/actions/workflows/verify.yml)
 
-Source and verification scripts for the paper *Tools for proving that graphs
-are not graceful* by Boon Suan Ho (version 2). The text of the paper was
-written by Claude Opus 5.5 (Anthropic), at the direction of the author; see
-the box "About this article" at the start of the paper and its Section 6 for
-how the results were found.
+Source and verification scripts for the paper
+[*Tools for proving that graphs are not graceful*](https://hexagonmath.org/2610.00316)
+(version 2). The text of the paper was written by Claude Opus 5.5
+(Anthropic); see the box "About this article" at the start of the paper and
+its Section 6 for how the results were found.
 
 | Path | Contents |
 | --- | --- |
