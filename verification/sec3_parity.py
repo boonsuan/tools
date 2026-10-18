@@ -12,6 +12,9 @@ Claims checked here
 * Section 3.4 and Corollary 3.8: identity (2) on actual graceful labelings,
   the arithmetic of the proof of Corollary 3.8, and the remark on
   K_{1,1,1,1,N}.
+* Corollary 3.9: each step of the proof (the identity at z = -1 and z = i),
+  and, after it, that K_6 v complement(K_4) is not graceful although it
+  passes the iterated parity test and the residue equations for q <= 16.
 * Section 3.5: the windmill cut counts, and the archived residue maps showing
   that the residue equations, together with the capacities, are solvable for
   every modulus 2 <= q <= 12 for K_{3,3,3}, K_{2,2,2,2,2}, K_{4,4,4} and
@@ -33,7 +36,7 @@ from pathlib import Path
 import json
 
 from exact import check
-from polynomial import Poly
+from polynomial import Poly, variables
 from graphs import (clique_edges, complete_multipartite, required_differences,
                     signed_differences)
 
@@ -323,6 +326,209 @@ def check_corollary_3_8():
 
 
 # ----------------------------------------------------------------------------
+# Section 3.4: Corollary 3.9 (the identity at z = -1 and z = i)
+# ----------------------------------------------------------------------------
+#
+# Gaussian integers a + bi are represented as pairs (a, b).
+
+def i_power(j):
+    """i^j as a Gaussian integer (a, b)."""
+    return [(1, 0), (0, 1), (-1, 0), (0, -1)][j % 4]
+
+
+def right_side_at_i(m):
+    """sum over 0 < |j| <= m of i^j, as a Gaussian integer."""
+    total = [0, 0]
+    for j in list(range(-m, 0)) + list(range(1, m + 1)):
+        a, b = i_power(j)
+        total[0] += a
+        total[1] += b
+    return tuple(total)
+
+
+def check_corollary_3_9_gaussian():
+    """Corollary 3.9: for k >= 0, t >= 1 with k + t odd, K_{8k+6} v
+    complement(K_{2t}) is not graceful, and for k even neither is the graph
+    with one clique edge deleted.  We check each step of the proof."""
+    # m = C(s,2) + sN = 3 (mod 4) for s = 8k+6, N = 2t; this depends only on
+    # s mod 8 and N mod 4.
+    for k, t in product(range(2), range(1, 3)):
+        s, N = 8 * k + 6, 2 * t
+        check((comb(s, 2) + s * N) % 4 == 3, "m = 3 (mod 4)")
+    # The right side of the identity: at z = -1 it is -2 for m odd and 0 for
+    # m even; at z = i it is -2 for m = 2, 3 (mod 4).  Both depend on m mod 4.
+    for m in range(4, 8):
+        at_minus_one = sum((-1) ** j for j in range(-m, m + 1) if j != 0)
+        check(at_minus_one == (-2 if m % 2 else 0), "right side at z = -1")
+        check(right_side_at_i(m) == ((-2, 0) if m % 4 in (2, 3) else (0, 0)), "right side at z = i")
+
+    # The identity at z = -1 and at z = i, with s = 8k + 6:
+    #   |C|^2 - s + 2 Re(C conj(X)) = -2,
+    # where C(-1) = 2p, X(-1) = 2q, and C(i) = 2u + 2vi, X(i) = x + yi.
+    k, p, q, u, v, x, y = variables("k p q u v x y")
+    s = 8 * k + 6
+    check((2 * p) ** 2 - s + 2 * (2 * p) * (2 * q) + 2 == 4 * (p * p + 2 * p * q - (2 * k + 1)),
+          "at z = -1: p^2 + 2pq = 2k + 1")
+    # |2u + 2vi|^2 = 4u^2 + 4v^2 and Re((2u + 2vi)(x - yi)) = 2ux + 2vy:
+    check(4 * u * u + 4 * v * v - s + 2 * (2 * u * x + 2 * v * y) + 2
+          == 4 * (u * u + v * v + u * x + v * y - (2 * k + 1)),
+          "at z = i: u^2 + v^2 + ux + vy = 2k + 1")
+    # p^2 + 2pq = 2k + 1 forces p odd and q = k (mod 2); this depends on
+    # p, q mod 4 and k mod 2.
+    for p_, q_, k_ in product(range(4), range(4), range(2)):
+        if (p_ * p_ + 2 * p_ * q_ - (2 * k_ + 1)) % 4 == 0:
+            check(p_ % 2 == 1 and q_ % 2 == k_, "p odd and q = k (mod 2)")
+    # With p odd, the numbers 4k + 3 +- p of even and odd clique labels are
+    # even, so C(i) = (c_0 - c_2) + (c_1 - c_3) i has both parts even.  The
+    # parts of X(i) have the parities of the numbers t +- q of even and odd
+    # independent labels, which are t + k = 1 (mod 2).  Then u(u + x) and
+    # v(v + y) are even, so the left side u^2 + v^2 + ux + vy is even:
+    for u_, x_ in product(range(2), range(2)):
+        if x_ == 1:
+            check(u_ * (u_ + x_) % 2 == 0, "u(u + x) is even when x is odd")
+    # Deleting a clique edge ab (k even): m - 1 = 2 (mod 4), so the right sides
+    # are 0 at z = -1 and -2 at z = i.  If f(a), f(b) had the same parity, the
+    # identity at z = -1 would give p^2 + 2pq = 2k + 2 = 2 (mod 4), which is
+    # impossible (it depends on p, q mod 4):
+    check(all((p_ * p_ + 2 * p_ * q_) % 4 != 2 for p_, q_ in product(range(4), repeat=2)),
+          "p^2 + 2pq is never 2 (mod 4)")
+    check((2 * p) ** 2 - s - 2 * (-1) + 2 * (2 * p) * (2 * q)
+          == 4 * (p * p + 2 * p * q - (2 * k + 1)),
+          "opposite parities give p^2 + 2pq = 2k + 1 again")
+
+    # Finite sanity check of the conclusion: enumerate the residues mod 4 of
+    # the clique and independent labels (counts c_r, x_r) and test the
+    # identity at z = -1 and z = i directly.
+    for s_, N_ in [(6, 2), (6, 6), (6, 10), (14, 4), (14, 8), (22, 2), (22, 6)]:
+        m_ = comb(s_, 2) + s_ * N_
+        check(not identity_solvable_at_minus_one_and_i(s_, N_, m_),
+              f"K_{s_} v complement(K_{N_}) at z = -1 and z = i")
+
+
+def identity_solvable_at_minus_one_and_i(s, N, m):
+    """Are there residue counts mod 4 for the clique (c) and the independent
+    set (x) satisfying the identity at z = -1 and at z = i?"""
+    def value(counts, z_power):
+        a = b = 0
+        for r, count in enumerate(counts):
+            pa, pb = z_power(r)
+            a, b = a + count * pa, b + count * pb
+        return a, b
+    target_minus_one = sum((-1) ** j for j in range(-m, m + 1) if j != 0)
+    target_i = right_side_at_i(m)
+    for c in compositions(s, 4):
+        for x in compositions(N, 4):
+            for z_power, target in (((lambda r: ((-1) ** r, 0)), (target_minus_one, 0)),
+                                    (i_power, target_i)):
+                (ca, cb), (xa, xb) = value(c, z_power), value(x, z_power)
+                # |C|^2 - s + 2 Re(C conj(X)), with C = ca + cb i, X = xa + xb i
+                left = ca * ca + cb * cb - s + 2 * (ca * xa + cb * xb)
+                if (left, 0) != target:
+                    break
+            else:
+                return True
+    return False
+
+
+def compositions(total, parts):
+    """All ways to write total as an ordered sum of `parts` nonnegative integers."""
+    if parts == 1:
+        yield (total,)
+        return
+    for first in range(total + 1):
+        for rest in compositions(total - first, parts - 1):
+            yield (first,) + rest
+
+
+# The remark after Corollary 3.9: K_6 v complement(K_4).
+
+def graceful_labelings_of_K6_join(N):
+    """All graceful labelings of K_6 v complement(K_N), as (clique labels,
+    independent labels), with 0 among the clique labels.  (The edge with
+    difference m joins the labels 0 and m, so one of them is on the clique;
+    replacing f by m - f, we may assume it is 0.)  The clique labels form a
+    Golomb ruler; the 6N cross differences must be exactly the differences
+    1, ..., m that the ruler does not use."""
+    s = 6
+    m = comb(s, 2) + s * N
+    found = []
+
+    def rulers(prefix, used):
+        if len(prefix) == s:
+            yield prefix, used
+            return
+        for a in range(prefix[-1] + 1, m + 1):
+            new = {a - b for b in prefix}
+            if len(new) == len(prefix) and not new & used:
+                yield from rulers(prefix + [a], used | new)
+
+    for clique, used in rulers([0], set()):
+        missing = frozenset(range(1, m + 1)) - used
+        candidates = {}
+        for x in range(m + 1):
+            differences = frozenset(abs(x - c) for c in clique)
+            if x not in clique and len(differences) == s and differences <= missing:
+                candidates[x] = differences
+
+        def cover(left, chosen):
+            if not left:
+                if len(chosen) == N:
+                    found.append((clique, sorted(chosen)))
+                return
+            largest = max(left)          # some independent label must produce it
+            for x, differences in candidates.items():
+                if largest in differences and differences <= left and x not in chosen:
+                    cover(left - differences, chosen + [x])
+        cover(missing, [])
+    return found
+
+
+@lru_cache(maxsize=None)
+def split_next_levels(state):
+    """Iterated parity for disjoint unions of split graphs.  A state is a
+    sorted tuple of pieces (a, b) = K_a v complement(K_b).  Splitting a piece
+    into (x, y) and (a - x, b - y) cuts x(a-x) + x(b-y) + (a-x)y edges; as in
+    next_levels, we keep exactly floor(m_j/2) edges."""
+    def edges(piece):
+        return comb(piece[0], 2) + piece[0] * piece[1]
+    target = sum(edges(p) for p in state) // 2
+    options = {(0, ())}
+    for a, b in state:
+        new_options = set()
+        for kept, pieces in options:
+            for x, y in product(range(a + 1), range(b + 1)):
+                halves = ((x, y), (a - x, b - y))
+                kept_now = kept + edges(halves[0]) + edges(halves[1])
+                if kept_now <= target:
+                    new_pieces = pieces + tuple(h for h in halves if edges(h) > 0)
+                    new_options.add((kept_now, tuple(sorted(new_pieces))))
+        options = new_options
+    return tuple(sorted({pieces for kept, pieces in options if kept == target}))
+
+
+@lru_cache(maxsize=None)
+def split_passes_iterated_parity(state):
+    if not state:
+        return True
+    return any(split_passes_iterated_parity(following) for following in split_next_levels(state))
+
+
+def check_K6_join_4():
+    """The remark after Corollary 3.9: K_6 v complement(K_4) (m = 39) is not
+    graceful, by exhaustive search; it passes the iterated parity test; and
+    its residue equations with capacities are solvable for every q <= 16
+    (the maps in data/residue_maps_K6_join_4.json)."""
+    check(graceful_labelings_of_K6_join(4) == [], "K_6 v complement(K_4) should not be graceful")
+    check(split_passes_iterated_parity(((6, 4),)), "it passes the iterated parity test")
+    records = json.loads((DATA / "residue_maps_K6_join_4.json").read_text(encoding="utf-8"))
+    check(sorted(record["modulus"] for record in records) == list(range(2, 17)),
+          "one map for each 2 <= q <= 16")
+    for record in records:
+        check(record["parts"] == [1] * 6 + [4], "the graph K_{1,1,1,1,1,1,4}")
+        check_one_residue_map(record)
+
+
+# ----------------------------------------------------------------------------
 # Section 3.5: limits of parity
 # ----------------------------------------------------------------------------
 
@@ -378,6 +584,9 @@ CHECKS = [
     ("Cor. 3.7", "modulus-3 obstruction for n = 6, 10, 11 (mod 12)", check_corollary_3_7_modulus_3),
     ("Sec. 3.4, eq. (2)", "identity (2) on graceful split graphs", check_identity_2_on_examples),
     ("Cor. 3.8", "the parity family of split graphs; K_(1,1,1,1,N)", check_corollary_3_8),
+    ("Cor. 3.9", "the Gaussian-integer obstruction", check_corollary_3_9_gaussian),
+    ("Sec. 3.4", "K_6 v complement(K_4): not graceful, yet passes parity and residues",
+     check_K6_join_4),
     ("Sec. 3.5", "cut counts for K_5 windmills", check_windmill_cut_counts),
     ("Sec. 3.5", "residue maps with capacities for four graphs, q <= 12",
      check_residue_equations_up_to_12),

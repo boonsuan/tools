@@ -14,9 +14,9 @@ From this directory:
 python run_all.py
 ```
 
-Python 3.9 or later, standard library only. The run takes a few seconds and
+Python 3.9 or later, standard library only. The run takes about ten seconds and
 lists every check next to the paper result it belongs to, ending with
-`44 of 44 checks passed`. The exit status is nonzero if anything fails.
+`46 of 46 checks passed`. The exit status is nonzero if anything fails.
 
 ```
 python run_all.py --list     # list the checks without running them
@@ -78,7 +78,8 @@ minimum of the Dirichlet kernel. No proof in the paper depends on them.
 | `appendix_a_dirichlet.py` | Appendix A: Lemma A.1, and the rational bounds for beta_m used elsewhere |
 | `figures.py` | Figures 2, 4 and 5 |
 | `data/residue_witnesses.json` | the residue maps of Section 3.5 |
-| `discovery/` | the search that found those maps (see below) |
+| `data/residue_maps_K6_join_4.json` | residue maps of K6 v complement(K4) for 2 <= q <= 16 (the remark after Corollary 3.9) |
+| `discovery/` | the searches that found those maps (see below) |
 
 Each module begins with a list of the claims it checks and ends with a list
 `CHECKS` of `(paper reference, description, function)`. Each check function
@@ -97,6 +98,7 @@ can be read from top to bottom alongside the paper.
 | Section 3.3 (K6 modulo 31) | `sec3_parity.check_K6_modulo_31` |
 | Corollary 3.7 | `sec3_parity.check_corollary_3_7_modulus_3` |
 | Identity (2), Corollary 3.8 | `sec3_parity.check_identity_2_on_examples`, `check_corollary_3_8` |
+| Corollary 3.9 and the remark after it (K6 v complement(K4)) | `sec3_parity.check_corollary_3_9_gaussian`, `check_K6_join_4` |
 | Section 3.5 | `sec3_parity.check_windmill_cut_counts`, `check_residue_equations_up_to_12` |
 | Decimal constants (Section 4, Table 1) | `sec4_positivity.check_decimal_constants` |
 | Corollary 4.4 | `sec4_positivity.check_corollary_4_4` |
@@ -167,6 +169,13 @@ python discovery/archive_residue_witnesses.py search_output.txt --output data/re
 ```
 
 This overwrites the archive in `data/`.
+
+The maps for K6 v complement(K4) in `data/residue_maps_K6_join_4.json` are
+found directly by `discovery/find_split_residue_maps.py` (under a second):
+
+```
+python discovery/find_split_residue_maps.py --output data/residue_maps_K6_join_4.json
+```
 
 ## Authorship
 

@@ -1,6 +1,6 @@
 """Run every check in this directory and report the results.
 
-    python run_all.py            run everything (a few seconds)
+    python run_all.py            run everything (about ten seconds)
     python run_all.py --list     list the checks without running them
     python run_all.py sec4       run only the modules whose names contain "sec4"
 

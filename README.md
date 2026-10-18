@@ -21,7 +21,7 @@ cd verification
 python run_all.py
 ```
 
-This needs Python 3.9 or later and nothing else. It runs 44 checks in a few
+This needs Python 3.9 or later and nothing else. It runs 46 checks in about ten
 seconds, each labelled with the result of the paper it belongs to. See
 [`verification/README.md`](verification/README.md) for what is checked, how
 (exact rational arithmetic and polynomial identities), and what is not.

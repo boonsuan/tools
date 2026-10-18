@@ -59,9 +59,9 @@
 \newcommand{\new}{\textsuperscript{$\star$}}
 \newcommand{\gpt}{\textsuperscript{$\dagger$}}
 
-\urlstyle{same}
-\newcommand{\doi}[1]{\href{https://doi.org/#1}{doi:\nolinkurl{#1}}}
-\newcommand{\arxiv}[1]{\href{https://arxiv.org/abs/#1}{arXiv:#1}}
+\urlstyle{tt}
+\newcommand{\doi}[1]{\href{https://doi.org/#1}{\nolinkurl{doi:#1}}}
+\newcommand{\arxiv}[1]{\href{https://arxiv.org/abs/#1}{\nolinkurl{arXiv:#1}}}
 \newcommand{\Diag}{\operatorname{Diag}}
 \newcommand{\SDP}{\operatorname{SDP}}
 
@@ -163,15 +163,16 @@ Golomb ruler}, and none exists with five or more marks.}
 \midrule
 \multicolumn{3}{@{}l}{\emph{Tool I: parity and residues}}\\
 graphs with all degrees even & $m\equiv1,2\pmod 4$ & Bos\'ak~\cite{rosa65}; Cor.~\ref{cor:rosa}\\
-friendship graphs $\smash[t]{K_3^{(t)}}$ & $t\equiv2,3\pmod4$ & Bos\'ak~\cite{rosa65}; Ex.~\ref{ex:windmills}\\
-windmills $\smash[t]{K_5^{(t)}}$ & $t$ odd, or $t=2,4$ & \cite{rosa65,bkt,kt77,mo}; Rem.~\ref{rem:windmills}\\
+friendship graphs $K_3^{(t)}$ & $t\equiv2,3\pmod4$ & Bos\'ak~\cite{rosa65}; Ex.~\ref{ex:windmills}\\
+windmills $K_5^{(t)}$ & $t$ odd, or $t=2,4$ & \cite{rosa65,bkt,kt77,mo}; Rem.~\ref{rem:windmills}\\
 decompositions into an odd number of $K_5$'s & always & Cor.~\ref{cor:decomp}\\
 graphs split into two or three $K_4$'s & any overlap & \cite{bkt}; Prop.~\ref{prop:iterated}\\
 $K_s\vee\overline K_{2t}$ & $s\equiv8,10\pmod{16}$ & Cor.~\ref{cor:splitparity}\gpt\\
+$K_{8k+6}\vee\overline K_{2t}$ & $k+t$ odd & Cor.~\ref{cor:gauss}\gpt\\
 \midrule
 \multicolumn{3}{@{}l}{\emph{Tool II: positivity, with clique and density certificates}}\\
 complete graphs $K_n$ & $n\ge5$ & Golomb~\cite{golomb}; Cor.~\ref{cor:cliques}\\
-windmills $\smash[t]{K_n^{(t)}}$; unions $tK_n$ & $n\ge6$ & \cite{koh,kotzig}; Cor.~\ref{cor:cliques}\\
+windmills $K_n^{(t)}$; unions $tK_n$ & $n\ge6$ & \cite{koh,kotzig}; Cor.~\ref{cor:cliques}\\
 barbells $B_n$ & $n\ge6$ & Cor.~\ref{cor:cliques}\new\\
 $K_n\square P_r$, $K_n\square C_r$ & $n\ge13$ (all $r$) & Li~\cite{knuth-err}; Cor.~\ref{cor:cliques}\\
 graphs with $m\ge0.4108\,n^2$ edges & always & \cite{rr,leech}; Cor.~\ref{cor:dense}\\
@@ -302,7 +303,7 @@ $K_{a_1,\dots,a_r}$ for the complete multipartite graph with parts of sizes
 $a_1,\dots,a_r$, and $\overline K_N$ for $N$ isolated vertices. $G\vee H$ is
 the join (every vertex of $G$ joined to every vertex of $H$), $G\square H$ the
 Cartesian product, $tK_n$ the disjoint union of $t$ copies of $K_n$, and
-$\smash[t]{K_n^{(t)}}$ the windmill of $t$ copies of $K_n$ sharing one vertex.
+$K_n^{(t)}$ the windmill of $t$ copies of $K_n$ sharing one vertex.
 $A$ is the adjacency matrix, $J$ the all-ones matrix, $\lmin$ the smallest
 eigenvalue of~$A$, and $M\succeq0$ means that $M$ is positive semidefinite.
 The Dirichlet kernel $D_m$, the trial frequency $t^*$, the number
@@ -500,11 +501,11 @@ For example, the cycle $C_n$ with $n\equiv1,2\pmod4$ and the complete graph
 $K_n$ with $n\equiv5$ or $7\pmod8$ are not graceful.
 
 \begin{example}[windmills]\label{ex:windmills}
-Let $\smash[t]{K_n^{(t)}}$ be the windmill formed by $t$ copies of $K_n$ sharing one
+Let $K_n^{(t)}$ be the windmill formed by $t$ copies of $K_n$ sharing one
 vertex. For odd $n$ all degrees are even, and $m=t\binom n2$. Hence the
-friendship graph $\smash[t]{K_3^{(t)}}$ is not graceful when $t\equiv2,3\pmod4$; Skolem's
+friendship graph $K_3^{(t)}$ is not graceful when $t\equiv2,3\pmod4$; Skolem's
 construction~\cite{skolem} shows that it is graceful when $t\equiv0,1\pmod 4$.
-Likewise $\smash[t]{K_5^{(t)}}$ is not graceful for odd $t$, since then
+Likewise $K_5^{(t)}$ is not graceful for odd $t$, since then
 $m=10t\equiv2\pmod4$. Their full status is recorded in
 Remark~\ref{rem:windmills}.
 \end{example}
@@ -687,11 +688,55 @@ parity. (For odd $N$ this is already Bos\'ak's condition: all degrees are
 even and $m=4N+6\equiv2\pmod4$.) The clique vertices have odd degree in Corollary~\ref{cor:splitparity},
 so Bos\'ak's condition does not apply there.
 
+Evaluating also at $z=i$ gives a second family. It is the counterpart of
+Corollary~\ref{cor:modthree} for the Gaussian integers: there the form
+$u^2-uv+v^2$ is the norm of $u+v\omega$, the value at $z=\omega$ of the sum
+of $z^{f(v)}$, written in the basis $1,\omega$.
+
+\mgpt\begin{corollary}[a Gaussian-integer obstruction]\label{cor:gauss}
+Let $k\ge0$ and $t\ge1$ with $k+t$ odd. Then $K_{8k+6}\vee\overline K_{2t}$
+is not graceful. If $k$ is even, it remains not graceful after deleting any
+one edge of the clique.
+\end{corollary}
+
+\begin{proof}
+Put $s=8k+6$ and $N=2t$; then $m=\binom s2+sN\equiv3\pmod4$. Let $C(z)$ and
+$X(z)$ be the sums of $z^{f(v)}$ over the clique and over the independent
+set. For $|z|=1$ the identity~\eqref{eq:master} reads
+\[
+ |C(z)|^2-s+2\operatorname{Re}\bigl(C(z)\overline{X(z)}\bigr)
+ =\sum_{0<|j|\le m}z^j .
+\]
+At $z=-1$, with $C(-1)=2p$ and $X(-1)=2q$, this is~\eqref{eq:splitparity}:
+$p^2+2pq=2k+1$. So $p$ is odd, which makes the numbers $4k+3\pm p$ of even
+and of odd clique labels both even, and $q\equiv k\pmod2$. Hence
+$C(i)=2u+2vi$ with $u,v\in\ZZ$. Write $X(i)=x+yi$; then $x$ and $y$ have
+the parities of the numbers $t\pm q$ of even and of odd labels in the
+independent set, so both are odd. At $z=i$ the right side is $-2$, because
+$m\equiv3\pmod4$, and the identity becomes
+\[
+ u^2+v^2+ux+vy=2k+1 .
+\]
+But $u(u+x)$ and $v(v+y)$ are even, since $x$ and $y$ are odd.
+
+If an edge $ab$ of the clique is deleted, then $m$ drops by one and the left
+side gains the term $-2\operatorname{Re}z^{f(a)-f(b)}$. At $z=-1$, if $f(a)$
+and $f(b)$ had the same parity, we would get $p^2+2pq=2k+2$, so $p=2p'$ and
+$2p'(p'+q)=k+1$, which is odd. So $f(a)-f(b)$ is odd, the extra term
+vanishes at $z=i$, and the same equations as before result.
+\end{proof}
+
+The same family also follows from Proposition~\ref{prop:iterated} at level
+$j=1$: the parities forced at $z=-1$ make every degree of $G_1$ even, while
+$m_1\equiv1\pmod4$. Neither argument reaches $K_6\vee\overline K_4$, which is
+not graceful by an exhaustive search: it passes the iterated parity test, and
+its residue equations, with capacities, are solvable for every $q\le16$.
+
 \subsection{Limits of parity}\label{sec:cannot}
 
 The residue equations work when few cut sizes are possible, as in a
 complete graph, and can fail when $G$ is built from many interchangeable
-pieces whose contributions add up to the required cut sizes. In $\smash[t]{K_5^{(t)}}$ each blade
+pieces whose contributions add up to the required cut sizes. In $K_5^{(t)}$ each blade
 contributes $0$, $4$ or $6$ edges to Golomb's cut, and these add up to the
 required $5t$ for every even~$t$. This is consistent with
 Remark~\ref{rem:windmills}: some of these windmills are graceful. For the
@@ -831,7 +876,7 @@ $\sum_i|Q_i|=\sigma$, and $e_0$ edges of $G$ lie in none of them. If
 $\sigma+2e_0\le1+\kappa(2m+1)$, then $G$ is not graceful. Consequently:
 \begin{enumerate}[label=(\alph*)]
 \item $K_n$ is not graceful for $n\ge5$ (Golomb's theorem);
-\item the windmill $\smash[t]{K_n^{(t)}}$ and the disjoint union $tK_n$ are not graceful
+\item the windmill $K_n^{(t)}$ and the disjoint union $tK_n$ are not graceful
   for $n\ge6$;
 \item the barbell $B_n$ (two copies of $K_n$ joined by an edge) is not
   graceful for $n\ge6$;
@@ -961,27 +1006,27 @@ indeed some of them are graceful, as the next remark shows.
 \begin{remark}[the status of windmills]\label{rem:windmills}
 Graceful labelings of windmills come from \emph{perfect difference families}: $t$ sets
 of $n$ integers, each containing~$0$, whose positive differences are exactly
-$1,\dots,t\binom n2$. Such a family gives a graceful labeling of $\smash[t]{K_n^{(t)}}$:
+$1,\dots,t\binom n2$. Such a family gives a graceful labeling of $K_n^{(t)}$:
 identify the $t$ zeros as the hub. A nonzero mark cannot occur in two sets,
 since it would repeat a difference from~$0$, so the labels are distinct, and
 the edge differences are the given ones. For $n=4$, Ge, Miao and
 Sun~\cite{gms} constructed these families for $4\le t\le1000$, and Liu, Feng,
 Wang and Zhang constructed them for every $t\ge4$~\cite{lfwz}, settling
-Bermond's conjecture: together with~\cite{bkt}, $\smash[t]{K_4^{(t)}}$ is graceful
+Bermond's conjecture: together with~\cite{bkt}, $K_4^{(t)}$ is graceful
 exactly when $t\ne2,3$. For $n\ge6$ the windmills are never graceful
 (Corollary~\ref{cor:cliques}(b)).
 
-For $n=5$ some windmills are graceful and some are not. $\smash[t]{K_5^{(2)}}$ is not graceful~\cite{bkt}, and
-neither is $\smash[t]{K_5^{(4)}}$: Kotzig and Turgeon showed by exhaustive elimination
+For $n=5$ some windmills are graceful and some are not. $K_5^{(2)}$ is not graceful~\cite{bkt}, and
+neither is $K_5^{(4)}$: Kotzig and Turgeon showed by exhaustive elimination
 that no perfect family exists for $t=4$~\cite{kt77}, and an exhaustive search by
-B.~D.~McKay found no graceful labeling of $\smash[t]{K_5^{(4)}}$ at all~\cite{mo}. On the
+B.~D.~McKay found no graceful labeling of $K_5^{(4)}$ at all~\cite{mo}. On the
 other hand, perfect families with blocks of size~$5$ exist for $t=6,8,10$, and
 a recursive construction produces infinitely many more, for example $t=732$
-and $t=974$~\cite{mathon}. So $\smash[t]{K_5^{(t)}}$ \emph{is} graceful for
+and $t=974$~\cite{mathon}. So $K_5^{(t)}$ \emph{is} graceful for
 infinitely many even $t$, and the status of the remaining even $t\ge12$ is open.
 Gallian's survey~\cite{gallian} (28th edition, Section~2.4) records
-$\smash[t]{K_5^{(3)}}$ and $\smash[t]{K_5^{(4)}}$ as graceful, and its summary table also lists
-$\smash[t]{K_5^{(5)}}$; as just explained, none of them is.
+$K_5^{(3)}$ and $K_5^{(4)}$ as graceful, and its summary table also lists
+$K_5^{(5)}$; as just explained, none of them is.
 \end{remark}
 
 \mnew\begin{corollary}[clique-decomposable graphs]\label{cor:decomp}
@@ -1009,7 +1054,7 @@ $m=3T\equiv1,2\pmod4$ exactly when $T\equiv3,2\pmod4$.
 Cliques that overlap in more than one vertex need a correction on the
 overlap. The simplest case is a family introduced by Koh, Rogers, Teo and
 Yap~\cite{koh}: let $B(n,r,t)$ be the graph formed by $t$ copies of $K_n$ that
-share a common $K_r$. Thus $B(n,1,t)=\smash[t]{K_n^{(t)}}$ and $B(n,r,1)=K_n$.
+share a common $K_r$. Thus $B(n,1,t)=K_n^{(t)}$ and $B(n,r,1)=K_n$.
 Bermond~\cite{bermond} asked which $B(n,r,t)$ are graceful, and Bermond and
 Farhi~\cite{bf} showed that they are not when $n$ is sufficiently large
 compared with~$r$. Positivity gives an explicit linear threshold, uniform
@@ -1682,7 +1727,7 @@ overtakes positivity only from $r=14$.
   in~\cite{rosa}. The refinement in Corollary~\ref{cor:knuthparity} appears in
   Section~7.2.2.3 of Knuth's \emph{The Art of Computer Programming},
   Volume~4, Fascicle~7~\cite{knuth-pre}. The application of the parity condition to the
-  windmills $\smash[t]{K_5^{(t)}}$ comes from a MathOverflow answer by the
+  windmills $K_5^{(t)}$ comes from a MathOverflow answer by the
   author~\cite{mo}.
 \item The name, the partition condition, and the theorem that $K_n$ is
   graceful only for $n\le4$ are due to Golomb~\cite{golomb}.
@@ -1694,14 +1739,14 @@ overtakes positivity only from $r=14$.
   Williamson's~\cite{gw}.
 \item The ordered-difference argument of Tool~III goes back to
   Lindstr\"om's bound for Sidon sets~\cite{lindstrom}.
-\item Windmills $\smash[t]{K_n^{(t)}}$ with $n\ge6$ were shown ungraceful by Koh,
+\item Windmills $K_n^{(t)}$ with $n\ge6$ were shown ungraceful by Koh,
   Rogers, Teo and Yap~\cite{koh}, and disjoint unions $tK_n$ ($t\ge2$) by
   Kotzig and Turgeon~\cite{kotzig}. Bermond, Kotzig and Turgeon~\cite{bkt}
   proved that no perfect system of difference sets has all its sets of one
   size $n\ge6$, which is Theorem~\ref{thm:cliquedec} for cliques of one
   order; they also used the case $j=1$ of Proposition~\ref{prop:iterated} and
-  excluded $\smash[t]{K_5^{(2)}}$. Kotzig and Turgeon excluded perfect families for
-  $\smash[t]{K_5^{(4)}}$~\cite{kt77}, and Mathon recorded perfect families of size-$5$ blocks for $t=6,8,10$ and
+  excluded $K_5^{(2)}$. Kotzig and Turgeon excluded perfect families for
+  $K_5^{(4)}$~\cite{kt77}, and Mathon recorded perfect families of size-$5$ blocks for $t=6,8,10$ and
 a recursive construction~\cite{mathon}.
 \item The complete multipartite conjecture is Beutner and Harborth's~\cite{beutner}.
   The graphs $B(n,r,t)$ are due to Koh, Rogers, Teo and Yap~\cite{koh}, the
@@ -1734,7 +1779,7 @@ planar refinement; several older proceedings papers (notably~\cite{bermond,bf})
 could not be checked in full. Results marked \new\ were found by Claude in
 this collaboration. Results marked \gpt\ were found by
 GPT-6 Pro (OpenAI), most of them in a referee report on an earlier draft, which
-also corrected the status of the windmills $\smash[t]{K_5^{(t)}}$ and suggested using
+also corrected the status of the windmills $K_5^{(t)}$ and suggested using
 $\kappa$ throughout. The author has not checked every proof in detail.
 The finite and numerical claims of the paper are checked by Python scripts
 at \url{https://github.com/boonsuan/tools}, in exact rational arithmetic
@@ -1751,7 +1796,9 @@ contributed the results marked~\gpt\ that are new in this version: the
 modulus-$3$ family, the exact energies of $B(n,r,t)$, the projection lemma,
 Theorem~\ref{thm:kg} and Corollary~\ref{cor:kg} for $K(11,2)$, the
 boundary-gap terms in Theorem~\ref{thm:core} and
-Corollary~\ref{cor:packing}, and the leaf lemma. The verification scripts
+Corollary~\ref{cor:packing}, and the leaf lemma. Corollary~\ref{cor:gauss}
+was found by GPT-6 Pro later, after the author suggested evaluating the
+identity at other points. The verification scripts
 were written by Claude for version~2, partly adapted from scripts in that
 revision.
 
@@ -1784,7 +1831,7 @@ revision.
   exactly one such pair exists. So every integer in $[0,m-c)$ is uniquely
   of the form $x'+u$ with $x'\in m-f(X)$ and $u\in C$: translates of $C$ tile
   an initial segment of length $m-c$.
-\item Determine which even $t\ge12$ make $\smash[t]{K_5^{(t)}}$ graceful. Are the
+\item Determine which even $t\ge12$ make $K_5^{(t)}$ graceful. Are the
   $K_4$-snakes graceful for every $t\ge4$?
 \item Find the true thresholds in Table~\ref{tab:families}. For example, are the Paley graphs $P(17)$ and $P(29)$ graceful? Are $K_4\square K_7$ and $K_5\square K_6$? Is
   the $q$-Kneser graph $K_2(4,2)$?
@@ -1990,7 +2037,7 @@ maximum cut and satisfiability problems using semidefinite programming,
 S.~W. Golomb, How to number a graph, in \emph{Graph Theory and Computing}
 (R.~C. Read, ed.), Academic Press, 1972, 23--37; \doi{10.1016/B978-1-4832-3187-7.50008-8}.
 \bibitem{mo}
-B.~S. Ho, answer to ``Do the windmills $\smash[t]{K_5^{(3)}}$ and $\smash[t]{K_5^{(4)}}$ admit graceful
+B.~S. Ho, answer to ``Do the windmills $K_5^{(3)}$ and $K_5^{(4)}$ admit graceful
 labellings?'' (question by R.~J. Stones, with comments by B.~D. McKay),
 MathOverflow, June 2022, \url{https://mathoverflow.net/q/424682}.
 \bibitem{knuth-err}
